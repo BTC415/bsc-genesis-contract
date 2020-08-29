@@ -18,7 +18,7 @@ program.option(
 
 program.option("--bscChainId <bscChainId>",
     "bsc chain id",
-    "0060");
+    "0038");
 
 program.option("--initBatchSizeForOracle <initBatchSizeForOracle>",
     "init batch size for oracle",
