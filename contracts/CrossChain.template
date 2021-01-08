@@ -206,21 +206,23 @@ function encodePayload(uint8 packageType, uint256 relayFee, bytes memory msgByte
     }
     emit receivedPackage(packageType, packageSequence, channelIdLocal);
     if (packageType == SYN_PACKAGE) {
-      address handlerContract = channelHandlerContractMap[channelIdLocal];
-      try IApplication(handlerContract).handleSynPackage(channelIdLocal, msgBytes) returns (bytes memory responsePayload) {
-        if (responsePayload.length!=0) {
-          sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(ACK_PACKAGE, 0, responsePayload));
-          channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
-        }
-      } catch Error(string memory reason) {
-        sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(FAIL_ACK_PACKAGE, 0, msgBytes));
-        channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
-        emit unexpectedRevertInPackageHandler(handlerContract, reason);
-      } catch (bytes memory lowLevelData) {
-        sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(FAIL_ACK_PACKAGE, 0, msgBytes));
-        channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
-        emit unexpectedFailureAssertionInPackageHandler(handlerContract, lowLevelData);
-      }
+//      address handlerContract = channelHandlerContractMap[channelIdLocal];
+      sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(FAIL_ACK_PACKAGE, 0, msgBytes));
+      channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
+//      try IApplication(handlerContract).handleSynPackage(channelIdLocal, msgBytes) returns (bytes memory responsePayload) {
+//        if (responsePayload.length!=0) {
+//          sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(ACK_PACKAGE, 0, responsePayload));
+//          channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
+//        }
+//      } catch Error(string memory reason) {
+//        sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(FAIL_ACK_PACKAGE, 0, msgBytes));
+//        channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
+//        emit unexpectedRevertInPackageHandler(handlerContract, reason);
+//      } catch (bytes memory lowLevelData) {
+//        sendPackage(channelSendSequenceMap[channelIdLocal], channelIdLocal, encodePayload(FAIL_ACK_PACKAGE, 0, msgBytes));
+//        channelSendSequenceMap[channelIdLocal] = channelSendSequenceMap[channelIdLocal] + 1;
+//        emit unexpectedFailureAssertionInPackageHandler(handlerContract, lowLevelData);
+//      }
     } else if (packageType == ACK_PACKAGE) {
       address handlerContract = channelHandlerContractMap[channelIdLocal];
       try IApplication(handlerContract).handleAckPackage(channelIdLocal, msgBytes) {
