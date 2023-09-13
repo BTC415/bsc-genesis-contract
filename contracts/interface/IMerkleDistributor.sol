@@ -7,7 +7,7 @@ interface IMerkleDistributor {
     // Returns true if the index has been marked claimed.
     function isClaimed(bytes32 index) external view returns (bool);
     // Claim the given amount of the token to the given address. Reverts if the inputs are invalid.
-    function claim(bytes32 tokenSymbol, bytes32 node, uint256 amount, bytes calldata ownerSignature, bytes calldata approvalSignature, bytes32[] calldata merkleProof) external;
+    function claim(bytes32 tokenSymbol, uint256 amount, bytes calldata prefixNode, bytes calldata suffixNode, bytes calldata ownerSignature, bytes calldata approvalSignature, bytes32[] calldata merkleProof) external;
     // registerToken register a token to the merkle distributor.
     function registerToken(bytes32 tokenSymbol, address contractAddr, uint256 decimals, uint256 amount, bytes calldata ownerSignature, bytes calldata approvalSignature) external;
     // This event is triggered whenever a call to #claim succeeds.
