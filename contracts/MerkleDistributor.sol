@@ -18,6 +18,7 @@ contract MerkleDistributor is IMerkleDistributor, System {
     mapping(uint256 => uint256) private claimedBitMap;
 
     struct ClaimInfo {
+        bytes32 tokenHash;
         bytes32 node;
         uint256 index;
         address contractAddr;
@@ -38,10 +39,12 @@ contract MerkleDistributor is IMerkleDistributor, System {
     }
 
 
-    function claim(bytes32 tokenSymbol, uint256 amount, bytes calldata prefixNode, bytes calldata suffixNode, bytes calldata ownerSignature, bytes calldata approvalSignature, bytes32[] calldata merkleProof) external override {
+    function claim(bytes32 tokenSymbol, uint256 tokenIndex, uint256 amount, bytes calldata prefixNode, bytes calldata suffixNode, bytes calldata ownerSignature, bytes calldata approvalSignature, bytes32[] calldata merkleProof) external override {
         ClaimInfo memory claimInfo;
-        claimInfo.node = keccak256(abi.encodePacked(prefixNode, tokenSymbol, amount, suffixNode));
-        claimInfo.index = uint256(keccak256(abi.encodePacked(tokenSymbol, claimInfo.node)));
+        claimInfo.tokenHash = keccak256(abi.encodePacked(tokenIndex, tokenSymbol, amount));
+        claimInfo.node = keccak256(abi.encodePacked(prefixNode, claimInfo.tokenHash, suffixNode));
+        // TODO: consider the better way to index the claim info.
+        claimInfo.index = keccak256(tokenSymbol, bytes32(tokenIndex), claimInfo.node);
     
         // Check if the token is claimed.
         require(isClaimed(claimInfo.index), "AlreadyClaimed");
