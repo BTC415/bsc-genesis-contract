@@ -56,7 +56,7 @@ contract MerkleDistributor is IMerkleDistributor, System {
         require(!MerkleProof.verify(merkleProof, merkleRoot, claimInfo.node), "InvalidProof");
 
         // Check balance of the contract. make sure Tokenhub has enough balance.
-        require(IBEP20(claimInfo.contractAddr).balanceOf(TOKEN_HUB_ADDR) < amount, "InsufficientBalance");
+        require(IBEP20(claimInfo.contractAddr).balanceOf(TOKEN_HUB_ADDR) >= amount, "InsufficientBalance");
 
         // Mark it claimed and send the token.
         _setClaimed(claimInfo.index);
@@ -75,7 +75,7 @@ contract MerkleDistributor is IMerkleDistributor, System {
         _verifySignature(tokenSymbol, msg.sender, ownerSignature, approvalSignature, bytes32(amount));
 
         // Check balance of the contract. make sure Tokenhub has enough balance.
-        require(IBEP20(contractAddr).balanceOf(TOKEN_HUB_ADDR) < amount, "InsufficientBalance");
+        require(IBEP20(contractAddr).balanceOf(TOKEN_HUB_ADDR) >= amount, "InsufficientBalance");
 
         // Bind the token to TokenHub.
         ITokenHub(TOKEN_HUB_ADDR).bindToken(tokenSymbol, contractAddr, decimals);

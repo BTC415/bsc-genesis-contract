@@ -530,7 +530,7 @@ contract TokenHub is ITokenHub, System, IParamSubscriber, IApplication, ISystemR
    * @param amount The amount to transfer
    */
   function unlock(address contractAddr, address recipient, uint256 amount) external override onlyInit payable {
-    require(IBEP20(contractAddr).balanceOf(address(this)) < amount, "InsufficientBalance");
+    require(IBEP20(contractAddr).balanceOf(address(this)) >= amount, "InsufficientBalance");
 
     IBEP20(contractAddr).transfer(recipient, amount);
   }
