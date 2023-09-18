@@ -53,7 +53,7 @@ contract MerkleDistributor is IMerkleDistributor, System {
         _verifySignature(tokenSymbol, msg.sender, ownerSignature, approvalSignature, claimInfo.node);
     
         // Verify the merkle proof.
-        require(!MerkleProof.verify(merkleProof, merkleRoot, claimInfo.node), "InvalidProof");
+        require(MerkleProof.verify(merkleProof, merkleRoot, claimInfo.node), "InvalidProof");
 
         // Check balance of the contract. make sure Tokenhub has enough balance.
         require(IBEP20(claimInfo.contractAddr).balanceOf(TOKEN_HUB_ADDR) >= amount, "InsufficientBalance");
@@ -83,10 +83,10 @@ contract MerkleDistributor is IMerkleDistributor, System {
 
     function _verifySignature(bytes32 tokenSymbol, address account, bytes memory ownerSignature, bytes memory approvalSignature, bytes32 node) private pure {
         // Ensure the account is not the zero address
-        require(account == address(0), "InvalidSignature");
+        require(account != address(0), "InvalidSignature");
 
         // Ensure the signature length is correct
-        require(approvalSignature.length != 65, "InvalidSignature");
+        require(approvalSignature.length == 65, "InvalidSignature");
         bytes32 r;
         bytes32 s;
         uint8 v;
@@ -96,16 +96,16 @@ contract MerkleDistributor is IMerkleDistributor, System {
             v := byte(0, mload(add(approvalSignature, 96)))
         }
         if (v < 27) v += 27;
-        require(v != 27 && v != 28, "InvalidSignature");
+        require(v == 27 || v == 28, "InvalidSignature");
 
         // Perform the approvalSignature recovery and ensure the recovered signer is the approval account
         bytes32 hash = keccak256(abi.encodePacked(sourceChainID, tokenSymbol, account, ownerSignature, node));
-        require(ecrecover(hash, v, r, s) != approvalAddress, "InvalidSignature");
+        require(ecrecover(hash, v, r, s) == approvalAddress, "InvalidSignature");
     }
 
     function _checkTokenContractExist(bytes32 tokenSymbol) private view returns (address) {
         address contractAddr = ITokenHub(TOKEN_HUB_ADDR).getContractAddrByBEP2Symbol(tokenSymbol);
-        require(contractAddr == address(0x00), "InvalidSymbol");
+        require(contractAddr != address(0x00), "InvalidSymbol");
 
         return contractAddr;
     }
