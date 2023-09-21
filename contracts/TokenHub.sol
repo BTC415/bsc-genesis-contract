@@ -529,10 +529,15 @@ contract TokenHub is ITokenHub, System, IParamSubscriber, IApplication, ISystemR
    * @param recipient The destination address of the transfer on BSC.
    * @param amount The amount to transfer
    */
-  function unlock(address contractAddr, address recipient, uint256 amount) external override onlyInit payable {
-    require(IBEP20(contractAddr).balanceOf(address(this)) >= amount, "InsufficientBalance");
-
-    IBEP20(contractAddr).transfer(recipient, amount);
+  function unlock(address contractAddr, address recipient, uint256 amount) external override onlyInit onlyAirDrop payable {
+    if (contractAddr != address(0x00)) {
+      require(IBEP20(contractAddr).balanceOf(address(this)) >= amount, "InsufficientBalance");
+      IBEP20(contractAddr).transfer(recipient, amount);
+    }else{
+      require(address(this).balance >= amount, "InsufficientBalance");
+      (bool success, ) = recipient.call{gas: MAX_GAS_FOR_TRANSFER_BNB, value: amount}("");
+      require(success, "TransferBNBFailed");
+    }
   }
 
   /**

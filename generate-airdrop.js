@@ -7,13 +7,13 @@ program.version("0.0.1");
 program.option(
     "-t, --template <template>",
     "TokenHub template file",
-    "./contracts/MerkleDistributor.template"
+    "./contracts/AirDrop.template"
 );
 
 program.option(
     "-o, --output <output-file>",
-    "MerkleDistributor.sol",
-    "./contracts/MerkleDistributor.sol"
+    "AirDrop.sol",
+    "./contracts/AirDrop.sol"
 )
 
 program.option("--network <network>",
@@ -28,4 +28,4 @@ const data = {
 const templateString = fs.readFileSync(program.template).toString();
 const resultString = nunjucks.renderString(templateString, data);
 fs.writeFileSync(program.output, resultString);
-console.log("MerkleDistributor file updated.");
+console.log("AirDrop file updated.");

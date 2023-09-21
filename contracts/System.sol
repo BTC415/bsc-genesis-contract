@@ -31,7 +31,7 @@ contract System {
   address public constant TOKEN_MANAGER_ADDR = 0x0000000000000000000000000000000000001008;
   address public constant CROSS_CHAIN_CONTRACT_ADDR = 0x0000000000000000000000000000000000002000;
   address public constant STAKING_CONTRACT_ADDR = 0x0000000000000000000000000000000000002001;
-  address public constant MERKLE_DISTRIBUTOR_CONTRACT_ADDR = 0x0000000000000000000000000000000000003000;
+  address public constant AIRDROP_CONTRACT_ADDR = 0x0000000000000000000000000000000000003000;
 
   modifier onlyCoinbase() {
     require(msg.sender == block.coinbase, "the message sender must be the block producer");
@@ -85,6 +85,11 @@ contract System {
 
   modifier onlyTokenManager() {
     require(msg.sender == TOKEN_MANAGER_ADDR, "the msg sender must be tokenManager");
+    _;
+  }
+
+  modifier onlyAirDrop() {
+    require(msg.sender == AIRDROP_CONTRACT_ADDR, "the msg sender must be airdrop");
     _;
   }
 
