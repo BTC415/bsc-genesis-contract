@@ -34,9 +34,12 @@ contract AirDrop is IAirDrop, System {
     }
 
 
-    function claim(uint256 tokenIndex, bytes32 tokenSymbol, uint256 amount, bytes calldata ownerSignature, bytes calldata approvalSignature, bytes32[] calldata merkleProof) external override {
+    function claim(
+        uint256 tokenIndex, bytes32 tokenSymbol, uint256 amount,
+        bytes calldata ownerPubKey, bytes calldata ownerSignature, bytes calldata approvalSignature,
+        bytes32[] calldata merkleProof) external override {
         // Recover the owner address and check signature.
-        address ownerAddr = _verifyTMSignature(ownerSignature, keccak256(abi.encodePacked(sourceChainID, tokenSymbol, tokenIndex, amount, msg.sender)));
+        bytes memory ownerAddr = _verifyTMSignature(ownerPubKey, ownerSignature, _tmSignarueHash(tokenIndex, tokenSymbol, amount, msg.sender));
         // Generate the leaf node of merkle tree.
         bytes32 node = keccak256(abi.encodePacked(ownerAddr, tokenIndex, tokenSymbol ,amount));
     
@@ -100,14 +103,79 @@ contract AirDrop is IAirDrop, System {
         return contractAddr;
     }
 
-    function _verifyTMSignature(bytes memory signature, bytes32 messageHash) internal pure returns (address) {
+    function _verifyTMSignature(bytes memory pubKey, bytes memory signature, bytes32 messageHash) internal view returns (bytes memory) {
+        // Ensure the public key is valid
+        require(pubKey.length == 33, "Invalid pubKey length");
         // Ensure the signature length is correct
-        require(signature.length == 65, "Invalid compact signature length");
+        require(signature.length == 64, "Invalid signature length");
 
-        // TODO: implement it in precompile contract
-        messageHash = 0;
+        // assemble input data
+        bytes memory input = new bytes(129);
+        _bytesConcat(input, pubKey, 0, 33);
+        _bytesConcat(input, signature, 33, 64);
+        _bytesConcat(input, _bytes32toBytes(messageHash), 97, 32);
+
+
+        bytes memory output = new bytes(20);
+        /* solium-disable-next-line */
+        assembly {
+          // call tmSignatureRecover precompile contract
+          // Contract address: 0x69
+          let len := mload(input)
+          if iszero(staticcall(not(0), 0x69, input, len, output, 20)) {
+            revert(0, 0)
+          }
+        }
         
         // Additional validation or usage of publicKey here
-        return address(0x00);
+        return output;
+    }
+
+    function _bytesConcat(bytes memory data, bytes memory _bytes, uint256 index, uint256 len) internal pure {
+        for (uint i; i<len; ++i) {
+          data[index++] = _bytes[i];
+        }
+    }
+
+    function _bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
+        return abi.encodePacked(_data);
+    }
+
+    function _tmSignarueHash(
+        uint256 tokenIndex,
+        bytes32 tokenSymbol,
+        uint256 amount,
+        address recipient
+    ) internal pure returns (bytes32) {
+        return sha256(abi.encodePacked(
+            '{"account_number":"0","chain_id":"',
+            sourceChainID,
+            '","data":null,"memo":"","msgs":[{"amount":"',
+            bytesToHex(abi.encodePacked(amount), false),
+            '","recipient":"',
+            bytesToHex(abi.encodePacked(recipient), true),
+            '","token_index":"',
+            bytesToHex(abi.encodePacked(tokenIndex), false),
+            '","token_symbol":"',
+            bytesToHex(abi.encodePacked(tokenSymbol), false),
+            '"}],"sequence":"0","source":"0"}'
+        ));
+    }
+
+    function bytesToHex(bytes memory buffer, bool prefix) public pure returns (string memory) {
+        // Fixed buffer size for hexadecimal convertion
+        bytes memory converted = new bytes(buffer.length * 2);
+
+        bytes memory _base = "0123456789abcdef";
+
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+        }
+
+        if (prefix) {
+            return string(abi.encodePacked('0x',converted));
+        }
+        return string(converted);
     }
 }
