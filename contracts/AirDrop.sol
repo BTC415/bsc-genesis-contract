@@ -15,22 +15,14 @@ contract AirDrop is IAirDrop, System {
     bytes32 public constant override merkleRoot = 0xad4aa415f872123b71db5d447df6bb417fa72c6a41737a82fdb5665e3edaa7c3; // TODO: replace with the real merkle root
 
     // This is a packed array of booleans.
-    mapping(uint256 => uint256) private claimedBitMap;
+    mapping(bytes32 => bool) private claimedMap;
 
     function isClaimed(bytes32 node) public view override returns (bool) {
-        uint256 index = uint256(node);
-        uint256 claimedWordIndex = index / 256;
-        uint256 claimedBitIndex = index % 256;
-        uint256 claimedWord = claimedBitMap[claimedWordIndex];
-        uint256 mask = (1 << claimedBitIndex);
-        return claimedWord & mask == mask;
+        return claimedMap[node];
     }
 
     function _setClaimed(bytes32 node) private {
-        uint256 index = uint256(node);
-        uint256 claimedWordIndex = index / 256;
-        uint256 claimedBitIndex = index % 256;
-        claimedBitMap[claimedWordIndex] = claimedBitMap[claimedWordIndex] | (1 << claimedBitIndex);
+        claimedMap[node] = true;
     }
 
 
