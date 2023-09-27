@@ -156,18 +156,18 @@ contract AirDrop is IAirDrop, System {
             '{"account_number":"0","chain_id":"',
             sourceChainID,
             '","data":null,"memo":"","msgs":[{"amount":"',
-            bytesToHex(abi.encodePacked(amount), false),
+            _bytesToHex(abi.encodePacked(amount), false),
             '","recipient":"',
-            bytesToHex(abi.encodePacked(recipient), true),
+            _bytesToHex(abi.encodePacked(recipient), true),
             '","token_index":"',
-            bytesToHex(abi.encodePacked(tokenIndex), false),
+            _bytesToHex(abi.encodePacked(tokenIndex), false),
             '","token_symbol":"',
-            bytesToHex(abi.encodePacked(tokenSymbol), false),
+            _bytesToHex(abi.encodePacked(tokenSymbol), false),
             '"}],"sequence":"0","source":"0"}'
         ));
     }
 
-    function bytesToHex(bytes memory buffer, bool prefix) public pure returns (string memory) {
+    function _bytesToHex(bytes memory buffer, bool prefix) public pure returns (string memory) {
         // Fixed buffer size for hexadecimal convertion
         bytes memory converted = new bytes(buffer.length * 2);
 
