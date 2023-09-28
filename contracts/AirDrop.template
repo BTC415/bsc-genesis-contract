@@ -62,19 +62,12 @@ contract AirDrop is IAirDrop, System {
     
         // Verify the merkle proof.
         require(MerkleProof.verify(merkleProof, merkleRoot, node), "InvalidProof");
-
-        // Check balance of the contract. make sure Tokenhub has enough balance.
-        if (tokenSymbol != "BNB") {
-            require(IBEP20(contractAddr).balanceOf(TOKEN_HUB_ADDR) >= amount, "InsufficientBalance");
-        }else{
-            require(address(System.TOKEN_HUB_ADDR).balance >= amount, "InsufficientBalance");
-        }
-        
-        // Mark it claimed and send the token.
-        _setClaimed(node);
     
         // Unlock the token from TokenHub.
         ITokenHub(TOKEN_HUB_ADDR).unlock(contractAddr, msg.sender, amount);
+
+        // Mark it claimed and send the token.
+        _setClaimed(node);
 
         emit Claimed(tokenSymbol, msg.sender, amount);
     }

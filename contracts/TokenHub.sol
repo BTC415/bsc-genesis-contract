@@ -530,13 +530,20 @@ contract TokenHub is ITokenHub, System, IParamSubscriber, IApplication, ISystemR
    * @param amount The amount to transfer
    */
   function unlock(address contractAddr, address recipient, uint256 amount) external override onlyInit onlyAirDrop payable {
+    uint256 convertedAmount;
     if (contractAddr != address(0x00)) {
-      require(IBEP20(contractAddr).balanceOf(address(this)) >= amount, "InsufficientBalance");
+      require(contractAddrToBEP2Symbol[contractAddr] != bytes32(0x00), "not bound");
+      uint256 bep20TokenDecimals=bep20ContractDecimals[contractAddr];
+      convertedAmount = convertToBep2Amount(amount, bep20TokenDecimals);// convert to bep2 amount
+      require(bep20TokenDecimals>=BEP2_TOKEN_DECIMALS || (bep20TokenDecimals<BEP2_TOKEN_DECIMALS && convertedAmount>amount), "amount is too large, uint256 overflow");
+      require(convertedAmount<=MAX_BEP2_TOTAL_SUPPLY, "amount is too large, exceed maximum bep2 token amount");
+      require(IBEP20(contractAddr).balanceOf(address(this)) >= convertedAmount, "insufficient balance");
       IBEP20(contractAddr).transfer(recipient, amount);
     }else{
-      require(address(this).balance >= amount, "InsufficientBalance");
-      (bool success, ) = recipient.call{gas: MAX_GAS_FOR_TRANSFER_BNB, value: amount}("");
-      require(success, "TransferBNBFailed");
+      convertedAmount = amount.div(TEN_DECIMALS); // native bnb decimals is 8 on BC, while the native bnb decimals on BSC is 18
+      require(address(this).balance >= convertedAmount, "insufficient balance");
+      (bool success, ) = recipient.call{gas: MAX_GAS_FOR_TRANSFER_BNB, value: convertedAmount}("");
+      require(success, "transfer BNB failed");
     }
   }
 
