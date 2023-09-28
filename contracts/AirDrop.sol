@@ -3,15 +3,17 @@ pragma solidity 0.6.4;
 import "./interface/IBEP20.sol";
 import "./interface/ITokenHub.sol";
 import "./interface/IAirDrop.sol";
+import "./interface/IParamSubscriber.sol";
 import "./lib/SafeMath.sol";
+import "./lib/BytesToTypes.sol";
 import "./System.sol";
 import "./MerkleProof.sol";
 
-contract AirDrop is IAirDrop, System {
+contract AirDrop is IAirDrop, IParamSubscriber, System {
     using SafeMath for uint256;
 
     string public constant sourceChainID = "Binance-Chain-Tigris"; // TODO: replace with the real chain id
-    address public constant approvalAddress = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa; // TODO: replace with the real address
+    address public approvalAddress = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa; // TODO: replace with the real address
     bytes32 public constant override merkleRoot = 0xad4aa415f872123b71db5d447df6bb417fa72c6a41737a82fdb5665e3edaa7c3; // TODO: replace with the real merkle root
 
     // This is a packed array of booleans.
@@ -59,7 +61,7 @@ contract AirDrop is IAirDrop, System {
         emit Claimed(tokenSymbol, msg.sender, amount);
     }
 
-    function _verifySignature(address account, bytes memory ownerSignature, bytes memory approvalSignature, bytes32 extra) private pure {
+    function _verifySignature(address account, bytes memory ownerSignature, bytes memory approvalSignature, bytes32 extra) private view {
         // Ensure the account is not the zero address
         require(account != address(0), "InvalidSignature");
 
@@ -162,5 +164,17 @@ contract AirDrop is IAirDrop, System {
             return string(abi.encodePacked('0x',converted));
         }
         return string(converted);
+    }
+
+    /*********************** Param update ********************************/
+    function updateParam(string calldata key, bytes calldata value) external override onlyInit onlyGov{
+      if (Memory.compareStrings(key,"approvalAddress")) {
+        require(value.length == 20, "length of approvalAddress mismatch");
+        address newApprovalAddress = BytesToTypes.bytesToAddress(20, value);
+        approvalAddress = newApprovalAddress;
+      } else {
+        require(false, "unknown param");
+      }
+      emit paramChange(key,value);
     }
 }
