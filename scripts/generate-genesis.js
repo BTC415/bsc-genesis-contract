@@ -54,6 +54,7 @@ Promise.all([
   readByteCode('tokenManager', 'out/TokenManager.sol/TokenManager.json'),
   readByteCode('crossChain', 'out/CrossChain.sol/CrossChain.json'),
   readByteCode('staking', 'out/Staking.sol/Staking.json'),
+  readByteCode('airdrop', 'out/AirDrop.sol/AirDrop.json'),
 ]).then((result) => {
   const data = {
     initLockedBNBOnTokenHub: program.initLockedBNBOnTokenHub,

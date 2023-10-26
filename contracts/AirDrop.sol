@@ -12,9 +12,9 @@ import "./MerkleProof.sol";
 contract AirDrop is IAirDrop, IParamSubscriber, System {
     using SafeMath for uint256;
 
-    string public constant sourceChainID = "Binance-Chain-Tigris"; // TODO: replace with the real chain id
-    address public approvalAddress = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa; // TODO: replace with the real address
-    bytes32 public constant override merkleRoot = 0xad4aa415f872123b71db5d447df6bb417fa72c6a41737a82fdb5665e3edaa7c3; // TODO: replace with the real merkle root
+    string public constant sourceChainID = "Binance-Chain-Ganges";
+    address public approvalAddress = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
+    bytes32 public constant override merkleRoot = 0x0000000000000000000000000000000000000000000000000000000000000000;
 
     // This is a packed array of booleans.
     mapping(bytes32 => bool) private claimedMap;
@@ -26,7 +26,6 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
     function _setClaimed(bytes32 node) private {
         claimedMap[node] = true;
     }
-
 
     function claim(
         uint256 tokenIndex, bytes32 tokenSymbol, uint256 amount,
