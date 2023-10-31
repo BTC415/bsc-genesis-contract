@@ -114,7 +114,7 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
           }
         }
         
-        // Additional validation or usage of publicKey here
+        // return the recovered address
         return output;
     }
 
