@@ -14,7 +14,8 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
 
     string public constant sourceChainID = "Binance-Chain-Ganges";
     address public approvalAddress = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
-    bytes32 public constant override merkleRoot = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    bytes32 public override merkleRoot = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    bool public merkleRootAlreadyInit = false;
 
     // This is a packed array of booleans.
     mapping(bytes32 => bool) private claimedMap;
@@ -170,7 +171,16 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
       if (Memory.compareStrings(key,"approvalAddress")) {
         require(value.length == 20, "length of approvalAddress mismatch");
         address newApprovalAddress = BytesToTypes.bytesToAddress(20, value);
+        require(newApprovalAddress != address(0), "approvalAddress should not be zero");
         approvalAddress = newApprovalAddress;
+      } else if (Memory.compareStrings(key,"merkleRoot")) {
+        require(!merkleRootAlreadyInit, "merkleRoot already init");
+        require(value.length == 32, "length of merkleRoot mismatch");
+        bytes32 newMerkleRoot = 0;
+        BytesToTypes.bytesToBytes32(32 ,value, newMerkleRoot);
+        require(newMerkleRoot != bytes32(0), "merkleRoot should not be zero");
+        merkleRoot = newMerkleRoot;
+        merkleRootAlreadyInit = true;
       } else {
         require(false, "unknown param");
       }
