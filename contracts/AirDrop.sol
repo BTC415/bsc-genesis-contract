@@ -24,10 +24,6 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
         return claimedMap[node];
     }
 
-    function _setClaimed(bytes32 node) private {
-        claimedMap[node] = true;
-    }
-
     function claim(
         uint256 tokenIndex, bytes32 tokenSymbol, uint256 amount,
         bytes calldata ownerPubKey, bytes calldata ownerSignature, bytes calldata approvalSignature,
@@ -56,7 +52,7 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
         ITokenHub(TOKEN_HUB_ADDR).unlock(contractAddr, msg.sender, amount);
 
         // Mark it claimed and send the token.
-        _setClaimed(node);
+        claimedMap[node] = true;
 
         emit Claimed(tokenSymbol, msg.sender, amount);
     }
