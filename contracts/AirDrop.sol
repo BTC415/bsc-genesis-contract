@@ -47,7 +47,7 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
         }
         
         // Verify the approval signature.
-        _verifySignature(msg.sender, ownerSignature, approvalSignature, node);
+        _verifySignature(msg.sender, ownerSignature, approvalSignature, node, merkleProof);
     
         // Verify the merkle proof.
         require(MerkleProof.verify(merkleProof, merkleRoot, node), "InvalidProof");
@@ -61,7 +61,7 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
         emit Claimed(tokenSymbol, msg.sender, amount);
     }
 
-    function _verifySignature(address account, bytes memory ownerSignature, bytes memory approvalSignature, bytes32 extra) private view {
+    function _verifySignature(address account, bytes memory ownerSignature, bytes memory approvalSignature, bytes32 leafHash, bytes32[] memory merkleProof) private view {
         // Ensure the account is not the zero address
         require(account != address(0), "InvalidSignature");
 
@@ -78,8 +78,12 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
         if (v < 27) v += 27;
         require(v == 27 || v == 28, "InvalidSignature");
 
+        bytes memory buffer;
+        for (uint i = 0; i < merkleProof.length; i++) {
+            buffer = abi.encodePacked(buffer, merkleProof[i]);
+        }
         // Perform the approvalSignature recovery and ensure the recovered signer is the approval account
-        bytes32 hash = keccak256(abi.encodePacked(sourceChainID, account, ownerSignature, extra));
+        bytes32 hash = keccak256(abi.encodePacked(sourceChainID, account, ownerSignature, leafHash, merkleRoot, buffer));
         require(ecrecover(hash, v, r, s) == approvalAddress, "InvalidSignature");
     }
 
