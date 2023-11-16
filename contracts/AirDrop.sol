@@ -25,13 +25,13 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
     }
 
     function claim(
-        uint256 tokenIndex, bytes32 tokenSymbol, uint256 amount,
+        bytes32 tokenSymbol, uint256 amount,
         bytes calldata ownerPubKey, bytes calldata ownerSignature, bytes calldata approvalSignature,
         bytes32[] calldata merkleProof) external override {
         // Recover the owner address and check signature.
-        bytes memory ownerAddr = _verifyTMSignature(ownerPubKey, ownerSignature, _tmSignarueHash(tokenIndex, tokenSymbol, amount, msg.sender));
+        bytes memory ownerAddr = _verifyTMSignature(ownerPubKey, ownerSignature, _tmSignarueHash(tokenSymbol, amount, msg.sender));
         // Generate the leaf node of merkle tree.
-        bytes32 node = keccak256(abi.encodePacked(ownerAddr, tokenIndex, tokenSymbol ,amount));
+        bytes32 node = keccak256(abi.encodePacked(ownerAddr, tokenSymbol, amount));
     
         // Check if the token is claimed.
         require(isClaimed(node), "AlreadyClaimed");
@@ -129,7 +129,6 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
     }
 
     function _tmSignarueHash(
-        uint256 tokenIndex,
         bytes32 tokenSymbol,
         uint256 amount,
         address recipient
@@ -141,8 +140,6 @@ contract AirDrop is IAirDrop, IParamSubscriber, System {
             _bytesToHex(abi.encodePacked(amount), false),
             '","recipient":"',
             _bytesToHex(abi.encodePacked(recipient), true),
-            '","token_index":"',
-            _bytesToHex(abi.encodePacked(tokenIndex), false),
             '","token_symbol":"',
             _bytesToHex(abi.encodePacked(tokenSymbol), false),
             '"}],"sequence":"0","source":"0"}'
